@@ -9,8 +9,8 @@ import * as FileSystem from 'expo-file-system';
 const ProfilePage = () => {
     const [displayName, setDisplayName] = useState('John Doe');
     const [profileImage, setProfileImage] = useState('http://surl.li/khjuh');
-    const [quizzesAttended, setQuizzesAttended] = useState(15);
-    const [coinsEarned, setCoinsEarned] = useState(250);
+    const [quizzesAttended, setQuizzesAttended] = useState(0);
+    const [coinsEarned, setCoinsEarned] = useState(0);
     const [isPremiumMember, setIsPremiumMember] = useState(false);
     const [hash, setHash] = useState('');
     const [editing, setEditing] = useState(false);
@@ -29,13 +29,19 @@ const ProfilePage = () => {
     const getData = (hash) => {
         const database = Firebase.database();
         const userRef = database.ref(`users/${hash}`);
-        userRef.once('value').then((snapshot) => {
+        userRef.on(('value'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                setProfileImage(data.profileImage)
-                setDisplayName(data.displayName)
+                if (data.profileImage) {
+
+                    setProfileImage(data.profileImage)
+                }
+                if (data.displayName) {
+
+                    setDisplayName(data.displayName)
+                }
                 setIsPremiumMember(data.isPremiumMember)
-                setQuizzesAttended(data.quizzesAttended)
+                setQuizzesAttended(Object.values(data.quizzesAttended).length)
                 setCoinsEarned(data.coinsEarned)
             }
         });

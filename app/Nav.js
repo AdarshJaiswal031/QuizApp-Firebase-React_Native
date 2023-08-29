@@ -15,7 +15,7 @@ export default function Nav() {
         navigation.navigate('QuestionForm');
     };
     const onPressButton3 = () => {
-        navigation.navigate('Quiz');
+        navigation.navigate('CoinRedeemPage');
     };
     const onPressButton4 = () => {
         navigation.navigate('ProfilePage');

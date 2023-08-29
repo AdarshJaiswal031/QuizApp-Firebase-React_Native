@@ -31,8 +31,9 @@ export default function Login() {
     const handleGenerateHash = async (email, password) => {
         const dataToHash = email + password;
         const hashedData = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, dataToHash);
-
-        setHash(hashedData);
+        console.log(hashedData)
+        await setHash(hashedData);
+        return hashedData
     };
     const isValidEmail = (email) => {
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
@@ -41,15 +42,17 @@ export default function Login() {
 
     const handleLogin = async () => {
         if (email && isValidEmail(email) && password) {
-            await handleGenerateHash(email, password);
-            console.log(hash)
-            const database = await Firebase.database();
-            console.log(hash)
-            const userRef = database.ref(`users/${hash}`);
-            userRef.set({ email });
-            await AsyncStorage.setItem('quizKey', hash);
-            console.log("SignUp Successfull")
-            navigation.navigate('LiveQuiz');
+            handleGenerateHash(email, password).then(async (hash) => {
+                console.log(hash)
+                const database = Firebase.database();
+                console.log(hash)
+                const userRef = database.ref(`users/${hash}`);
+                userRef.update({ email });
+                await AsyncStorage.setItem('quizKey', hash);
+                console.log("SignUp Successfull")
+                navigation.navigate('LiveQuiz');
+            })
+
         }
         else {
             console.log("something went wrong")
@@ -62,15 +65,19 @@ export default function Login() {
             {loggedIn ? (
                 <Text>Welcome back!</Text>
             ) : (
-                <View style={styles.loginContainer}>
+                <View style={styles.questionContainer}>
                     <TextInput
-                        style={styles.input}
+                        style={styles.optionInput}
+                        placeholderTextColor="#555353"
                         placeholder="Email"
                         onChangeText={(text) => setEmail(text)}
+
                         value={email}
                     />
                     <TextInput
-                        style={styles.input}
+                        style={styles.optionInput}
+                        placeholderTextColor="#555353"
+                        secureTextEntry={true}
                         placeholder="Password"
                         onChangeText={(text) => setPassword(text)}
                         value={password}
@@ -83,11 +90,21 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
+    questionContainer: {
+        borderWidth: 1,
+        borderColor: 'grey',
+        borderRadius: 5,
+        padding: 10,
+        marginBottom: 15,
+        color: "#999",
+        // backgroundColor: 'white',
+        width: "80%",
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: "#16161e",
     },
     welcomeText: {
         fontSize: 20,
@@ -96,6 +113,8 @@ const styles = StyleSheet.create({
     loginContainer: {
         justifyContent: 'center',
         alignItems: 'center',
+        marginTop: "20%",
+
     },
     input: {
         width: 200,
@@ -104,5 +123,15 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 20,
         paddingHorizontal: 10,
+    },
+    optionInput: {
+        borderWidth: 1,
+        // borderColor: '#ccc',
+        borderRadius: 5,
+        padding: 10,
+        marginBottom: 5,
+        color: "#999",
+        backgroundColor: '#2a2a32',
+
     },
 });

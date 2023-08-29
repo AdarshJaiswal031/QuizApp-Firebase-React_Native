@@ -1,15 +1,54 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-
+import Firebase from '../firebaseDev/firebaseConfig'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const CoinRedeemPage = () => {
-    const [availableCoins, setAvailableCoins] = useState(100);
+    const [availableCoins, setAvailableCoins] = useState(0);
     const [redeemAmount, setRedeemAmount] = useState('');
+    const [hash, setHash] = useState('');
 
+    useEffect(() => {
+        checkLocalStorage();
+    }, []);
+    const checkLocalStorage = async () => {
+        const storedHash = await AsyncStorage.getItem('quizKey');
+        if (storedHash) {
+            setHash(storedHash);
+            getCoins(storedHash)
+
+        }
+
+    };
+    const getCoins = (hash) => {
+        const database = Firebase.database();
+        const userRef = database.ref(`users/${hash}`);
+        userRef.on(('value'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                setAvailableCoins(data.coinsEarned)
+            }
+        })
+    }
     const handleRedeemPress = () => {
         const amountToRedeem = parseInt(redeemAmount, 10);
 
         if (!isNaN(amountToRedeem) && amountToRedeem <= availableCoins) {
             setAvailableCoins(availableCoins - amountToRedeem);
+            const database = Firebase.database();
+            const userRef = database.ref(`users/${hash}`);
+            userRef.once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    if (data.coinsEarned) {
+                        const updatedData = {
+                            coinsEarned: data.coinsEarned - amountToRedeem,
+                        };
+                        userRef.update(updatedData)
+
+                    }
+                }
+            })
+
             setRedeemAmount('');
         }
     };

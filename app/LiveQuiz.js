@@ -11,7 +11,7 @@ export default function LiveQuiz() {
     const getData = () => {
         const database = Firebase.database();
         const liveQuizes = database.ref(`liveQuizes`);
-        liveQuizes.once('value').then((snapshot) => {
+        liveQuizes.on(('value'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 const quizesArray = Object.values(data);
@@ -21,11 +21,6 @@ export default function LiveQuiz() {
         });
     }
     const navigation = useNavigation();
-    // const quizData = [
-    //     { id: 1, uploader: 'John Doe', quizName: 'Sample Quiz 1' },
-    //     { id: 2, uploader: 'Jane Smith', quizName: 'Sample Quiz 2' },
-    //     { id: 3, uploader: 'Jane Smith', quizName: 'Sample Quiz 2' },
-    // ];
     const handleQuizCardPress = async (key) => {
         await AsyncStorage.setItem('dataKey', key);
         navigation.navigate('Quiz');
@@ -33,7 +28,7 @@ export default function LiveQuiz() {
     return (
         <View style={styles.mainContainer}>
             <Text style={styles.textStyles}>Live Quizes</Text>
-            <ScrollView style={styles.container}>
+            {quizData.length != 0 ? (<ScrollView style={styles.container}>
                 {quizData.map((quiz) => (
                     <TouchableOpacity
                         key={quiz.key}
@@ -46,7 +41,9 @@ export default function LiveQuiz() {
                         </View>
                     </TouchableOpacity>
                 ))}
-            </ScrollView>
+            </ScrollView>) : (<Text style={[styles.quizNameText, styles.mar]}>No quiz found !!</Text>)
+            }
+
 
         </View>
     )
@@ -89,4 +86,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
         color: "#676768"
     },
+    mar: {
+        marginLeft: "6%"
+    }
 })

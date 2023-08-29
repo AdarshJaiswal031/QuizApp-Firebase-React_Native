@@ -69,9 +69,9 @@ const QuestionForm = () => {
         else {
             console.log("something went wrong")
         }
-        // setName('');
-        // setDescription('');
-        // setQuestions([{ question: '', options: ['', '', '', ''], answer: 0 }]);
+        setName('');
+        setDescription('');
+        setQuestions([{ question: '', options: ['', '', '', ''], answer: 0 }]);
     };
 
     const checkLocalStorage = async () => {
@@ -111,7 +111,7 @@ const QuestionForm = () => {
                         {q.options.map((option, optionIndex) => (
                             <View>
                                 <TextInput
-                                    key={`${optionIndex}${questionIndex}`}
+                                    key={`${optionIndex}${q}`}
                                     style={styles.optionInput}
                                     placeholder={`Option ${optionIndex + 1}`}
                                     placeholderTextColor="#555353"

@@ -9,11 +9,15 @@ export default function Quiz() {
     const [selectedOption, setSelectedOption] = useState({});
     const [scoreAnim, setscoreAnim] = useState(false);
     const [score, setscore] = useState(0);
+    const [dataKey, setdataKey] = useState('');
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const currentQuestion = quizData[currentQuestionIndex];
     const [quizzesAttended, setQuizzesAttended] = useState(15);
-    const [coinsEarned, setCoinsEarned] = useState(250);
     const [isPremiumMember, setIsPremiumMember] = useState(true);
+    const [hash, setHash] = useState('');
+    const [coinsEarned, setCoinsEarned] = useState(0);
+
+
     const handleOptionPress = (option) => {
 
         let newScore = score;
@@ -51,10 +55,20 @@ export default function Quiz() {
 
     useEffect(() => {
         getData();
+        checkLocalStorage();
     }, []);
+    const checkLocalStorage = async () => {
+        const storedHash = await AsyncStorage.getItem('quizKey');
+        if (storedHash) {
+            setHash(storedHash);
+            getData(storedHash)
+
+        }
+
+    };
     const getData = async () => {
         const dataKey = await AsyncStorage.getItem('dataKey');
-        console.log(dataKey)
+        setdataKey(dataKey)
         if (dataKey) {
             const database = Firebase.database();
 
@@ -82,10 +96,70 @@ export default function Quiz() {
             // setSelectedOption(null);
         }
     };
-    console.log("quiz")
     const handleSubmit = () => {
-        console.log(score, "###############")
         setscoreAnim(true)
+        const database = Firebase.database();
+        const userRef = database.ref(`users/${hash}`);
+        userRef.once('value').then((snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+
+                if (data.quizzesAttended) {
+                    const quizzesAttendedArray = Object.values(data.quizzesAttended);
+                    if (!quizzesAttendedArray.includes(dataKey)) {
+                        const updatedData = {
+                            quizzesAttended: [...quizzesAttendedArray, dataKey]
+                        };
+                        userRef.update(updatedData)
+                        if (data.coinsEarned) {
+                            const updatedData = {
+                                coinsEarned: data.coinsEarned + score,
+                            };
+                            setCoinsEarned(score)
+                            userRef.update(updatedData)
+
+                        }
+                        else {
+                            const updatedData = {
+                                coinsEarned: score,
+                            };
+                            setCoinsEarned(score)
+
+                            userRef.update(updatedData)
+                        }
+                    }
+                    else {
+                        setCoinsEarned(0)
+
+                    }
+                }
+                else {
+                    const updatedData = {
+                        quizzesAttended: [dataKey]
+                    };
+                    userRef.update(updatedData)
+                    if (data.coinsEarned) {
+                        const updatedData = {
+                            coinsEarned: data.coinsEarned + score,
+                        };
+                        setCoinsEarned(score)
+
+                        userRef.update(updatedData)
+
+                    }
+                    else {
+                        const updatedData = {
+                            coinsEarned: score,
+                        };
+                        setCoinsEarned(score)
+
+                        userRef.update(updatedData)
+                    }
+                }
+
+            }
+        })
+
     }
     return (
         <View style={styles.mainContainer}>
@@ -142,6 +216,11 @@ export default function Quiz() {
                                 <Text style={styles.heading}>Correct Answers</Text>
 
                                 <View style={styles.separator} />
+                                <View><View style={styles.detailItem}>
+                                    <Text style={styles.label}>Coins Earned :</Text>
+                                    <Text style={styles.amount}>{coinsEarned}</Text>
+                                </View>
+                                    <View style={styles.separator} /></View>
                                 <ScrollView style={styles.scrollScore}>
                                     {quizData.map((item, index) => {
                                         return (<View><View style={styles.detailItem}>

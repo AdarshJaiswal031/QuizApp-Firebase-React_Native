@@ -23,7 +23,8 @@ export default function App() {
         headerShown: false
       }}>
         <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="LiveQuiz" component={CoinRedeemPage} />
+        <Stack.Screen name="LiveQuiz" component={LiveQuiz} />
+        <Stack.Screen name="CoinRedeemPage" component={CoinRedeemPage} />
         <Stack.Screen name="Quiz" component={Quiz} />
         <Stack.Screen name="QuestionForm" component={QuestionForm} />
         <Stack.Screen name="ProfilePage" component={ProfilePage} />
